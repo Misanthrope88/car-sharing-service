@@ -12,9 +12,13 @@ import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "cars")
+@SQLDelete(sql = "UPDATE cars SET is_deleted = true WHERE id = ?")
+@SQLRestriction("is_deleted = false")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -38,4 +42,7 @@ public class Car {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal dailyFee;
+
+    @Column(nullable = false)
+    private boolean isDeleted;
 }
