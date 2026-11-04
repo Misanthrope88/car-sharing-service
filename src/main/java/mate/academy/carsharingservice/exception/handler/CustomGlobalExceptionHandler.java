@@ -3,7 +3,9 @@ package mate.academy.carsharingservice.exception.handler;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import mate.academy.carsharingservice.exception.EntityNotFoundException;
+import mate.academy.carsharingservice.exception.RegistrationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,5 +30,17 @@ public class CustomGlobalExceptionHandler {
     public Map<String, String> handleEntityNotFoundException(
             EntityNotFoundException exception) {
         return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(RegistrationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleRegistrationException(RegistrationException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, String> handleAuthenticationException() {
+        return Map.of("error", "Invalid email or password");
     }
 }
