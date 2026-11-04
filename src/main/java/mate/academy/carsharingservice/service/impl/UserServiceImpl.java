@@ -1,5 +1,6 @@
 package mate.academy.carsharingservice.service.impl;
 
+import java.sql.SQLException;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import mate.academy.carsharingservice.dto.UserRegistrationRequestDto;
@@ -10,7 +11,6 @@ import mate.academy.carsharingservice.model.Role;
 import mate.academy.carsharingservice.model.User;
 import mate.academy.carsharingservice.repository.UserRepository;
 import mate.academy.carsharingservice.service.UserService;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private static final String DUPLICATE_EMAIL_MESSAGE = "Email is already registered";
+    private static final String UNIQUE_VIOLATION_SQL_STATE = "23505";
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -48,8 +49,8 @@ public class UserServiceImpl implements UserService {
 
     private boolean isDuplicateEmail(DataIntegrityViolationException exception) {
         for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
-            if (cause instanceof ConstraintViolationException violation
-                    && "uk_users_email".equals(violation.getConstraintName())) {
+            if (cause instanceof SQLException sqlException
+                    && UNIQUE_VIOLATION_SQL_STATE.equals(sqlException.getSQLState())) {
                 return true;
             }
         }
