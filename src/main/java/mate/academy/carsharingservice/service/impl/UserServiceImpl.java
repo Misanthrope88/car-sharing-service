@@ -3,8 +3,11 @@ package mate.academy.carsharingservice.service.impl;
 import java.sql.SQLException;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import mate.academy.carsharingservice.dto.UpdateUserRequestDto;
+import mate.academy.carsharingservice.dto.UpdateUserRoleRequestDto;
 import mate.academy.carsharingservice.dto.UserRegistrationRequestDto;
 import mate.academy.carsharingservice.dto.UserResponseDto;
+import mate.academy.carsharingservice.exception.EntityNotFoundException;
 import mate.academy.carsharingservice.exception.RegistrationException;
 import mate.academy.carsharingservice.mapper.UserMapper;
 import mate.academy.carsharingservice.model.Role;
@@ -45,6 +48,35 @@ public class UserServiceImpl implements UserService {
             }
             throw exception;
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponseDto getByEmail(String email) {
+        return userMapper.toDto(findByEmail(email));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto updateByEmail(String email, UpdateUserRequestDto request) {
+        User user = findByEmail(email);
+        userMapper.updateUserFromDto(request, user);
+        return userMapper.toDto(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto updateRole(Long id, UpdateUserRoleRequestDto request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Can't find user by id: " + id));
+        user.setRole(request.role());
+        return userMapper.toDto(userRepository.save(user));
+    }
+
+    private User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Can't find user by email: " + email));
     }
 
     private boolean isDuplicateEmail(DataIntegrityViolationException exception) {
