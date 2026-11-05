@@ -2,6 +2,7 @@ package mate.academy.carsharingservice.exception.handler;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import mate.academy.carsharingservice.exception.CarUnavailableException;
 import mate.academy.carsharingservice.exception.EntityNotFoundException;
 import mate.academy.carsharingservice.exception.RegistrationException;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,12 @@ public class CustomGlobalExceptionHandler {
     @ExceptionHandler(RegistrationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleRegistrationException(RegistrationException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(CarUnavailableException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleCarUnavailableException(CarUnavailableException exception) {
         return Map.of("error", exception.getMessage());
     }
 

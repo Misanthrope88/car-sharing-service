@@ -29,14 +29,14 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional(readOnly = true)
     public Page<CarDto> getAll(Pageable pageable) {
-        return carRepository.findAll(pageable)
+        return carRepository.findAllActive(pageable)
                 .map(carMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
     public CarDto getById(Long id) {
-        Car car = carRepository.findById(id)
+        Car car = carRepository.findActiveById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find car by id: " + id));
         return carMapper.toDto(car);
     }
@@ -44,7 +44,7 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     public CarDto update(Long id, CreateCarRequestDto request) {
-        Car car = carRepository.findById(id)
+        Car car = carRepository.findActiveById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find car by id: " + id));
         carMapper.updateCarFromDto(request, car);
         return carMapper.toDto(carRepository.save(car));
@@ -53,7 +53,7 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     public void deleteById(Long id) {
-        Car car = carRepository.findById(id)
+        Car car = carRepository.findActiveById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find car by id: " + id));
         carRepository.delete(car);
     }
