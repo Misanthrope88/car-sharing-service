@@ -6,6 +6,7 @@ import mate.academy.carsharingservice.exception.CarUnavailableException;
 import mate.academy.carsharingservice.exception.EntityNotFoundException;
 import mate.academy.carsharingservice.exception.RegistrationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -45,9 +46,15 @@ public class CustomGlobalExceptionHandler {
         return Map.of("error", exception.getMessage());
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, String> handleBadCredentialsException() {
+        return Map.of("error", "Invalid email or password");
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public Map<String, String> handleAuthenticationException() {
-        return Map.of("error", "Invalid email or password");
+        return Map.of("error", "Authentication required");
     }
 }
