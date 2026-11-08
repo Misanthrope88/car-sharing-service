@@ -1,6 +1,7 @@
 package mate.academy.carsharingservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,14 +44,21 @@ public class RentalController {
         return rentalService.create(request);
     }
 
-    @Operation(summary = "Get own rentals, or all rentals for managers")
+    @Operation(summary = "Get rentals with optional user and activity filters")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Page of rentals returned"),
-            @ApiResponse(responseCode = "401", description = "Authentication required")
+            @ApiResponse(responseCode = "400", description = "Invalid filter value"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "User filter requires manager role")
     })
     @GetMapping
-    public Page<RentalResponseDto> getAll(@ParameterObject Pageable pageable) {
-        return rentalService.getAll(pageable);
+    public Page<RentalResponseDto> getAll(
+            @Parameter(description = "Filter by user ID; available only to managers")
+            @RequestParam(name = "user_id", required = false) Long userId,
+            @Parameter(description = "True for unreturned rentals, false for returned rentals")
+            @RequestParam(name = "is_active", required = false) Boolean isActive,
+            @ParameterObject Pageable pageable) {
+        return rentalService.getAll(userId, isActive, pageable);
     }
 
     @Operation(summary = "Get rental details")

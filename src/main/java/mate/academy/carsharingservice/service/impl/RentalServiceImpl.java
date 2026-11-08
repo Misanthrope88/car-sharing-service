@@ -16,6 +16,7 @@ import mate.academy.carsharingservice.repository.UserRepository;
 import mate.academy.carsharingservice.service.RentalService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -54,12 +55,23 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<RentalResponseDto> getAll(Pageable pageable) {
+    public Page<RentalResponseDto> getAll(Long userId, Boolean isActive, Pageable pageable) {
         User user = getCurrentUser();
-        Page<Rental> rentals = user.getRole() == Role.MANAGER
-                ? rentalRepository.findAllWithDetails(pageable)
-                : rentalRepository.findAllByUserId(user.getId(), pageable);
-        return rentals.map(rentalMapper::toDto);
+        if (user.getRole() != Role.MANAGER && userId != null) {
+            throw new AccessDeniedException("User filter requires manager role");
+        }
+        Long effectiveUserId = user.getRole() == Role.MANAGER ? userId : user.getId();
+        Specification<Rental> specification = (root, query, builder) -> builder.conjunction();
+        if (effectiveUserId != null) {
+            specification = specification.and((root, query, builder) ->
+                    builder.equal(root.get("user").get("id"), effectiveUserId));
+        }
+        if (isActive != null) {
+            specification = specification.and((root, query, builder) -> isActive
+                    ? builder.isNull(root.get("actualReturnDate"))
+                    : builder.isNotNull(root.get("actualReturnDate")));
+        }
+        return rentalRepository.findAll(specification, pageable).map(rentalMapper::toDto);
     }
 
     @Override
