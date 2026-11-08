@@ -20,4 +20,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM Car c WHERE c.id = :id AND c.isDeleted = false")
     Optional<Car> findActiveByIdForUpdate(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM Car c WHERE c.id = :id")
+    Optional<Car> findByIdForUpdate(@Param("id") Long id);
 }

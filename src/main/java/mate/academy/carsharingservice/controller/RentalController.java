@@ -72,4 +72,17 @@ public class RentalController {
     public RentalResponseDto getById(@PathVariable Long id) {
         return rentalService.getById(id);
     }
+
+    @Operation(summary = "Return a rental")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Rental returned"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Rental not found"),
+            @ApiResponse(responseCode = "409", description = "Rental already returned")
+    })
+    @PostMapping("/{id}/return")
+    public RentalResponseDto returnRental(@PathVariable Long id) {
+        return rentalService.returnRental(id);
+    }
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 import mate.academy.carsharingservice.exception.CarUnavailableException;
 import mate.academy.carsharingservice.exception.EntityNotFoundException;
 import mate.academy.carsharingservice.exception.RegistrationException;
+import mate.academy.carsharingservice.exception.RentalAlreadyReturnedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -43,6 +44,13 @@ public class CustomGlobalExceptionHandler {
     @ExceptionHandler(CarUnavailableException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleCarUnavailableException(CarUnavailableException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(RentalAlreadyReturnedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleRentalAlreadyReturnedException(
+            RentalAlreadyReturnedException exception) {
         return Map.of("error", exception.getMessage());
     }
 
