@@ -10,12 +10,12 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @SpringBootTest
 @Testcontainers
 class CarSharingServiceApplicationTests {
-	@Container
-	@ServiceConnection
-	static PostgreSQLContainer postgres =
-			new PostgreSQLContainer("postgres:16-alpine");
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:16-alpine");
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 }

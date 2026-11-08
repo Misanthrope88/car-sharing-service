@@ -1,5 +1,6 @@
 package mate.academy.carsharingservice.service.impl;
 
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import mate.academy.carsharingservice.dto.CreateRentalRequestDto;
 import mate.academy.carsharingservice.dto.RentalResponseDto;
@@ -44,7 +45,7 @@ public class RentalServiceImpl implements RentalService {
             throw new CarUnavailableException("Car is not available for rental");
         }
         Rental rental = new Rental();
-        rental.setRentalDate(request.rentalDate());
+        rental.setRentalDate(LocalDate.now());
         rental.setReturnDate(request.returnDate());
         rental.setActualReturnDate(null);
         rental.setCar(car);
