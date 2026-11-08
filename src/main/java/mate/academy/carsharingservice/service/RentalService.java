@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 public interface RentalService {
     RentalResponseDto create(CreateRentalRequestDto request);
 
-    Page<RentalResponseDto> getAll(Pageable pageable);
+    Page<RentalResponseDto> getAll(Long userId, Boolean isActive, Pageable pageable);
 
     RentalResponseDto getById(Long id);
 }
