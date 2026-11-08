@@ -6,6 +6,7 @@ import mate.academy.carsharingservice.dto.CreateRentalRequestDto;
 import mate.academy.carsharingservice.dto.RentalResponseDto;
 import mate.academy.carsharingservice.exception.CarUnavailableException;
 import mate.academy.carsharingservice.exception.EntityNotFoundException;
+import mate.academy.carsharingservice.exception.RentalAlreadyReturnedException;
 import mate.academy.carsharingservice.mapper.RentalMapper;
 import mate.academy.carsharingservice.model.Car;
 import mate.academy.carsharingservice.model.Rental;
@@ -84,6 +85,27 @@ public class RentalServiceImpl implements RentalService {
         if (user.getRole() != Role.MANAGER && !rental.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("Access denied");
         }
+        return rentalMapper.toDto(rental);
+    }
+
+    @Override
+    @Transactional
+    public RentalResponseDto returnRental(Long id) {
+        User user = getCurrentUser();
+        Rental rental = rentalRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new EntityNotFoundException("Can't find rental by id: " + id));
+        if (user.getRole() != Role.MANAGER && !rental.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Access denied");
+        }
+        if (rental.getActualReturnDate() != null) {
+            throw new RentalAlreadyReturnedException(
+                    "Rental with id " + id + " is already returned");
+        }
+        Car car = carRepository.findByIdForUpdate(rental.getCar().getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Can't find car by id: " + rental.getCar().getId()));
+        car.setInventory(car.getInventory() + 1);
+        rental.setActualReturnDate(LocalDate.now());
         return rentalMapper.toDto(rental);
     }
 
