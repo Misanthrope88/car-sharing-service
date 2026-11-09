@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-alter-payments-session-columns
+      author: car-sharing-service
+      changes:
+        - modifyDataType:
+            tableName: payments
+            columnName: session_url
+            newDataType: VARCHAR(2048)
+        - addUniqueConstraint:
+            tableName: payments
+            columnNames: session_id
+            constraintName: uk_payments_session_id

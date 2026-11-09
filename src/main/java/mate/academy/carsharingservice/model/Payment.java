@@ -38,10 +38,10 @@ public class Payment {
     @JoinColumn(name = "rental_id", nullable = false)
     private Rental rental;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2048)
     private String sessionUrl;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String sessionId;
 
     @Column(nullable = false, precision = 19, scale = 2)
