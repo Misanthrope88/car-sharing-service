@@ -2,7 +2,6 @@ package mate.academy.carsharingservice.service.impl;
 
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
-import mate.academy.carsharingservice.model.User;
 import mate.academy.carsharingservice.repository.UserRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,12 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(@NonNull String username) {
         String email = username.trim().toLowerCase(Locale.ROOT);
-        User user = userRepository.findByEmail(email)
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .roles(user.getRole().name())
-                .build();
     }
 }
