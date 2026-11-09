@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import mate.academy.carsharingservice.exception.CarUnavailableException;
 import mate.academy.carsharingservice.exception.EntityNotFoundException;
+import mate.academy.carsharingservice.exception.PaymentException;
+import mate.academy.carsharingservice.exception.PaymentGatewayException;
 import mate.academy.carsharingservice.exception.RegistrationException;
 import mate.academy.carsharingservice.exception.RentalAlreadyReturnedException;
 import org.springframework.http.HttpStatus;
@@ -52,6 +54,18 @@ public class CustomGlobalExceptionHandler {
     public Map<String, String> handleRentalAlreadyReturnedException(
             RentalAlreadyReturnedException exception) {
         return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(PaymentException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handlePaymentException(PaymentException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(PaymentGatewayException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public Map<String, String> handlePaymentGatewayException() {
+        return Map.of("error", "Payment provider error");
     }
 
     @ExceptionHandler(BadCredentialsException.class)
