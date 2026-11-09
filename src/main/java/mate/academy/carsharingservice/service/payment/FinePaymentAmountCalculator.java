@@ -13,7 +13,7 @@ public class FinePaymentAmountCalculator implements PaymentAmountCalculator {
     private final BigDecimal fineMultiplier;
 
     public FinePaymentAmountCalculator(
-            @Value("${payment.fine-multiplier:1.5}") BigDecimal fineMultiplier) {
+            @Value("${payment.fine-multiplier}") BigDecimal fineMultiplier) {
         this.fineMultiplier = fineMultiplier;
     }
 

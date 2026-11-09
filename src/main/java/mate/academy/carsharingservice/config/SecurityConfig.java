@@ -53,6 +53,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/cars", "/cars/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         .requestMatchers(HttpMethod.GET,
+                                "/payments/success", "/payments/cancel").permitAll()
+                        .requestMatchers(HttpMethod.GET,
                                 "/swagger-ui/**", "/swagger-ui.html",
                                 "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/users/{id}/role").hasRole("MANAGER")
