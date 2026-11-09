@@ -5,3 +5,6 @@ databaseChangeLog:
   - include:
       file: changes/002-add-car-soft-delete.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/003-insert-default-manager.yaml
+      relativeToChangelogFile: true

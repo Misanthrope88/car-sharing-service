@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-insert-default-manager
+      author: car-sharing-service
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: email
+                  value: "manager@carsharing.com"
+              - column:
+                  name: first_name
+                  value: "Default"
+              - column:
+                  name: last_name
+                  value: "Manager"
+              - column:
+                  name: password
+                  value: "$2a$10$cwoAJTDGKkjXZo1rhWpWE.r4cKH3jU3zZNSGjBp5ScDTuRC7ZSIS6"
+              - column:
+                  name: role
+                  value: "MANAGER"
