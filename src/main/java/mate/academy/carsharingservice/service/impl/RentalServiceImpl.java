@@ -14,16 +14,11 @@ import mate.academy.carsharingservice.model.Role;
 import mate.academy.carsharingservice.model.User;
 import mate.academy.carsharingservice.repository.CarRepository;
 import mate.academy.carsharingservice.repository.RentalRepository;
-import mate.academy.carsharingservice.repository.UserRepository;
 import mate.academy.carsharingservice.service.RentalService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,13 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class RentalServiceImpl implements RentalService {
     private final RentalRepository rentalRepository;
     private final CarRepository carRepository;
-    private final UserRepository userRepository;
     private final RentalMapper rentalMapper;
 
     @Override
     @Transactional
-    public RentalResponseDto create(CreateRentalRequestDto request) {
-        final User user = getCurrentUser();
+    public RentalResponseDto create(CreateRentalRequestDto request, User user) {
         Car car = carRepository.findActiveByIdForUpdate(request.carId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Can't find car by id: " + request.carId()));
@@ -57,8 +50,8 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<RentalResponseDto> getAll(Long userId, Boolean isActive, Pageable pageable) {
-        User user = getCurrentUser();
+    public Page<RentalResponseDto> getAll(
+            User user, Long userId, Boolean isActive, Pageable pageable) {
         if (user.getRole() != Role.MANAGER && userId != null) {
             throw new AccessDeniedException("User filter requires manager role");
         }
@@ -78,8 +71,7 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     @Transactional(readOnly = true)
-    public RentalResponseDto getById(Long id) {
-        User user = getCurrentUser();
+    public RentalResponseDto getById(Long id, User user) {
         Rental rental = rentalRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find rental by id: " + id));
         if (user.getRole() != Role.MANAGER && !rental.getUser().getId().equals(user.getId())) {
@@ -90,8 +82,7 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     @Transactional
-    public RentalResponseDto returnRental(Long id) {
-        User user = getCurrentUser();
+    public RentalResponseDto returnRental(Long id, User user) {
         Rental rental = rentalRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find rental by id: " + id));
         if (user.getRole() != Role.MANAGER && !rental.getUser().getId().equals(user.getId())) {
@@ -107,15 +98,5 @@ public class RentalServiceImpl implements RentalService {
         car.setInventory(car.getInventory() + 1);
         rental.setActualReturnDate(LocalDate.now());
         return rentalMapper.toDto(rental);
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication instanceof AnonymousAuthenticationToken) {
-            throw new InsufficientAuthenticationException("Authentication required");
-        }
-        return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new EntityNotFoundException("Authenticated user not found"));
     }
 }

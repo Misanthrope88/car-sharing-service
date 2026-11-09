@@ -9,11 +9,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mate.academy.carsharingservice.dto.CreateRentalRequestDto;
 import mate.academy.carsharingservice.dto.RentalResponseDto;
+import mate.academy.carsharingservice.model.User;
 import mate.academy.carsharingservice.service.RentalService;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,8 +42,10 @@ public class RentalController {
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public RentalResponseDto create(@RequestBody @Valid CreateRentalRequestDto request) {
-        return rentalService.create(request);
+    public RentalResponseDto create(
+            @RequestBody @Valid CreateRentalRequestDto request,
+            @Parameter(hidden = true) @AuthenticationPrincipal User user) {
+        return rentalService.create(request, user);
     }
 
     @Operation(summary = "Get rentals with optional user and activity filters")
@@ -57,8 +61,9 @@ public class RentalController {
             @RequestParam(name = "user_id", required = false) Long userId,
             @Parameter(description = "True for unreturned rentals, false for returned rentals")
             @RequestParam(name = "is_active", required = false) Boolean isActive,
-            @ParameterObject Pageable pageable) {
-        return rentalService.getAll(userId, isActive, pageable);
+            @ParameterObject Pageable pageable,
+            @Parameter(hidden = true) @AuthenticationPrincipal User user) {
+        return rentalService.getAll(user, userId, isActive, pageable);
     }
 
     @Operation(summary = "Get rental details")
@@ -69,8 +74,10 @@ public class RentalController {
             @ApiResponse(responseCode = "404", description = "Rental not found")
     })
     @GetMapping("/{id}")
-    public RentalResponseDto getById(@PathVariable Long id) {
-        return rentalService.getById(id);
+    public RentalResponseDto getById(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @AuthenticationPrincipal User user) {
+        return rentalService.getById(id, user);
     }
 
     @Operation(summary = "Return a rental")
@@ -82,7 +89,9 @@ public class RentalController {
             @ApiResponse(responseCode = "409", description = "Rental already returned")
     })
     @PostMapping("/{id}/return")
-    public RentalResponseDto returnRental(@PathVariable Long id) {
-        return rentalService.returnRental(id);
+    public RentalResponseDto returnRental(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @AuthenticationPrincipal User user) {
+        return rentalService.returnRental(id, user);
     }
 }
