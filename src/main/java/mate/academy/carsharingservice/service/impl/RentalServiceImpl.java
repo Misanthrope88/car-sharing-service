@@ -15,6 +15,8 @@ import mate.academy.carsharingservice.model.User;
 import mate.academy.carsharingservice.repository.CarRepository;
 import mate.academy.carsharingservice.repository.RentalRepository;
 import mate.academy.carsharingservice.service.RentalService;
+import mate.academy.carsharingservice.service.notification.NotificationMessageBuilder;
+import mate.academy.carsharingservice.service.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,6 +30,8 @@ public class RentalServiceImpl implements RentalService {
     private final RentalRepository rentalRepository;
     private final CarRepository carRepository;
     private final RentalMapper rentalMapper;
+    private final NotificationService notificationService;
+    private final NotificationMessageBuilder messageBuilder;
 
     @Override
     @Transactional
@@ -45,7 +49,9 @@ public class RentalServiceImpl implements RentalService {
         rental.setCar(car);
         rental.setUser(user);
         car.setInventory(car.getInventory() - 1);
-        return rentalMapper.toDto(rentalRepository.save(rental));
+        Rental savedRental = rentalRepository.save(rental);
+        notificationService.sendMessage(messageBuilder.buildNewRentalMessage(savedRental));
+        return rentalMapper.toDto(savedRental);
     }
 
     @Override
