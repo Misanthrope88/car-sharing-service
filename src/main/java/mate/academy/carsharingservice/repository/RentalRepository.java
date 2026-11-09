@@ -1,6 +1,8 @@
 package mate.academy.carsharingservice.repository;
 
 import jakarta.persistence.LockModeType;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import mate.academy.carsharingservice.model.Rental;
 import org.springframework.data.domain.Page;
@@ -26,4 +28,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long>,
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM Rental r WHERE r.id = :id")
     Optional<Rental> findByIdForUpdate(@Param("id") Long id);
+
+    @EntityGraph(attributePaths = {"car", "user"})
+    List<Rental> findAllByActualReturnDateIsNullAndReturnDateLessThanEqual(LocalDate date);
 }
