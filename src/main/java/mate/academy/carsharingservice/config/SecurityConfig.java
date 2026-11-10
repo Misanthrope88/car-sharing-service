@@ -1,6 +1,7 @@
 package mate.academy.carsharingservice.config;
 
 import jakarta.servlet.DispatcherType;
+import java.time.LocalDateTime;
 import mate.academy.carsharingservice.security.JwtAuthenticationFilter;
 import mate.academy.carsharingservice.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
@@ -64,12 +65,14 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, exception) -> {
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                            response.getWriter().write("{\"timestamp\":\""
+                                    + LocalDateTime.now() + "\",\"error\":\"Unauthorized\"}");
                         })
                         .accessDeniedHandler((request, response, exception) -> {
                             response.setStatus(HttpStatus.FORBIDDEN.value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write("{\"error\":\"Access denied\"}");
+                            response.getWriter().write("{\"timestamp\":\""
+                                    + LocalDateTime.now() + "\",\"error\":\"Access denied\"}");
                         }))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);

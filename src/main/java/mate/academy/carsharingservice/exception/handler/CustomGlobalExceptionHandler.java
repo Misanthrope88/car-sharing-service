@@ -1,5 +1,6 @@
 package mate.academy.carsharingservice.exception.handler;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import mate.academy.carsharingservice.exception.CarUnavailableException;
@@ -21,62 +22,72 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class CustomGlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleValidationException(
+    public Map<String, Object> handleValidationException(
             MethodArgumentNotValidException exception) {
         Map<String, String> errors = new LinkedHashMap<>();
         for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
             errors.putIfAbsent(fieldError.getField(), fieldError.getDefaultMessage());
         }
-        return errors;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("errors", errors);
+        return body;
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleEntityNotFoundException(
+    public Map<String, Object> handleEntityNotFoundException(
             EntityNotFoundException exception) {
-        return Map.of("error", exception.getMessage());
+        return errorBody(exception.getMessage());
     }
 
     @ExceptionHandler(RegistrationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleRegistrationException(RegistrationException exception) {
-        return Map.of("error", exception.getMessage());
+    public Map<String, Object> handleRegistrationException(RegistrationException exception) {
+        return errorBody(exception.getMessage());
     }
 
     @ExceptionHandler(CarUnavailableException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleCarUnavailableException(CarUnavailableException exception) {
-        return Map.of("error", exception.getMessage());
+    public Map<String, Object> handleCarUnavailableException(CarUnavailableException exception) {
+        return errorBody(exception.getMessage());
     }
 
     @ExceptionHandler(RentalAlreadyReturnedException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleRentalAlreadyReturnedException(
+    public Map<String, Object> handleRentalAlreadyReturnedException(
             RentalAlreadyReturnedException exception) {
-        return Map.of("error", exception.getMessage());
+        return errorBody(exception.getMessage());
     }
 
     @ExceptionHandler(PaymentException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handlePaymentException(PaymentException exception) {
-        return Map.of("error", exception.getMessage());
+    public Map<String, Object> handlePaymentException(PaymentException exception) {
+        return errorBody(exception.getMessage());
     }
 
     @ExceptionHandler(PaymentGatewayException.class)
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
-    public Map<String, String> handlePaymentGatewayException() {
-        return Map.of("error", "Payment provider error");
+    public Map<String, Object> handlePaymentGatewayException() {
+        return errorBody("Payment provider error");
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, String> handleBadCredentialsException() {
-        return Map.of("error", "Invalid email or password");
+    public Map<String, Object> handleBadCredentialsException() {
+        return errorBody("Invalid email or password");
     }
 
     @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, String> handleAuthenticationException() {
-        return Map.of("error", "Authentication required");
+    public Map<String, Object> handleAuthenticationException() {
+        return errorBody("Authentication required");
+    }
+
+    private Map<String, Object> errorBody(String message) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("error", message);
+        return body;
     }
 }
