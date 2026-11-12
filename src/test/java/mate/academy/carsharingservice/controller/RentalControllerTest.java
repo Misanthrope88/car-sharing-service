@@ -82,7 +82,8 @@ class RentalControllerTest extends AbstractIntegrationTest {
 
         // Then
         result.andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Car is not available for rental"));
+                .andExpect(jsonPath("$.error").value(
+                        "Car with id " + UNAVAILABLE_CAR_ID + " is not available for rental"));
         verify(notificationService, never()).sendMessage(anyString());
     }
 

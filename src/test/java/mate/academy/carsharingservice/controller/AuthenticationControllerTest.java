@@ -69,7 +69,8 @@ class AuthenticationControllerTest extends AbstractIntegrationTest {
         // Then
         result.andExpect(status().isConflict())
                 .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.error").value("Email is already registered"));
+                .andExpect(jsonPath("$.error").value(
+                        "Email is already registered: customer@example.com"));
     }
 
     @Test

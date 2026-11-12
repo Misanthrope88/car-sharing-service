@@ -40,7 +40,8 @@ public class RentalServiceImpl implements RentalService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Can't find car by id: " + request.carId()));
         if (car.getInventory() <= 0) {
-            throw new CarUnavailableException("Car is not available for rental");
+            throw new CarUnavailableException("Car with id " + car.getId()
+                    + " is not available for rental");
         }
         Rental rental = new Rental();
         rental.setRentalDate(LocalDate.now());
@@ -59,7 +60,8 @@ public class RentalServiceImpl implements RentalService {
     public Page<RentalResponseDto> getAll(
             User user, Long userId, Boolean isActive, Pageable pageable) {
         if (user.getRole() != Role.MANAGER && userId != null) {
-            throw new AccessDeniedException("User filter requires manager role");
+            throw new AccessDeniedException(
+                    "Filtering by user id " + userId + " requires manager role");
         }
         Long effectiveUserId = user.getRole() == Role.MANAGER ? userId : user.getId();
         Specification<Rental> specification = (root, query, builder) -> builder.conjunction();
@@ -81,7 +83,7 @@ public class RentalServiceImpl implements RentalService {
         Rental rental = rentalRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find rental by id: " + id));
         if (user.getRole() != Role.MANAGER && !rental.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Access denied");
+            throw new AccessDeniedException("Access denied to rental with id " + id);
         }
         return rentalMapper.toDto(rental);
     }
@@ -92,7 +94,7 @@ public class RentalServiceImpl implements RentalService {
         Rental rental = rentalRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find rental by id: " + id));
         if (user.getRole() != Role.MANAGER && !rental.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Access denied");
+            throw new AccessDeniedException("Access denied to rental with id " + id);
         }
         if (rental.getActualReturnDate() != null) {
             throw new RentalAlreadyReturnedException(
