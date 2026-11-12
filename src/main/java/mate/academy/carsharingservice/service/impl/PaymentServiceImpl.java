@@ -46,7 +46,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional(readOnly = true)
     public Page<PaymentDto> getAll(User user, Long userId, Pageable pageable) {
         if (user.getRole() != Role.MANAGER && userId != null) {
-            throw new AccessDeniedException("User filter requires manager role");
+            throw new AccessDeniedException(
+                    "Filtering by user id " + userId + " requires manager role");
         }
         Page<Payment> payments;
         if (user.getRole() == Role.MANAGER) {
@@ -66,18 +67,20 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Can't find rental by id: " + request.rentalId()));
         if (user.getRole() != Role.MANAGER && !rental.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Access denied");
+            throw new AccessDeniedException(
+                    "Access denied to rental with id " + rental.getId());
         }
         PaymentType type = request.type();
         if (type == PaymentType.FINE && (rental.getActualReturnDate() == null
                 || !rental.getActualReturnDate().isAfter(rental.getReturnDate()))) {
-            throw new PaymentException(
-                    "Fine is available only for rentals returned after the return date");
+            throw new PaymentException("Fine is not available for rental with id "
+                    + rental.getId() + ": it was not returned after the return date");
         }
         Optional<Payment> existing = paymentRepository.findByRentalIdAndType(rental.getId(), type);
         if (existing.isPresent()) {
             if (existing.get().getStatus() == PaymentStatus.PAID) {
-                throw new PaymentException("Payment is already completed");
+                throw new PaymentException(type + " payment for rental with id "
+                        + rental.getId() + " is already completed");
             }
             return paymentMapper.toDto(existing.get());
         }
@@ -113,7 +116,7 @@ public class PaymentServiceImpl implements PaymentService {
             return paymentMapper.toDto(payment);
         }
         if (!stripeService.isSessionPaid(sessionId)) {
-            throw new PaymentException("Payment is not completed");
+            throw new PaymentException("Payment for session " + sessionId + " is not completed");
         }
         payment.setStatus(PaymentStatus.PAID);
         return paymentMapper.toDto(payment);

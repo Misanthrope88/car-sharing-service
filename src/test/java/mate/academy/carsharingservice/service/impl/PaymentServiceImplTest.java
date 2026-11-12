@@ -219,8 +219,8 @@ class PaymentServiceImplTest {
                 () -> paymentService.createPaymentSession(request, customer));
 
         // Then
-        assertEquals("Fine is available only for rentals returned after the return date",
-                exception.getMessage());
+        assertEquals("Fine is not available for rental with id " + RENTAL_ID
+                + ": it was not returned after the return date", exception.getMessage());
         verifyStripeNeverCalled();
     }
 
@@ -239,8 +239,8 @@ class PaymentServiceImplTest {
                 () -> paymentService.createPaymentSession(request, customer));
 
         // Then
-        assertEquals("Fine is available only for rentals returned after the return date",
-                exception.getMessage());
+        assertEquals("Fine is not available for rental with id " + RENTAL_ID
+                + ": it was not returned after the return date", exception.getMessage());
         verifyStripeNeverCalled();
     }
 
@@ -262,7 +262,8 @@ class PaymentServiceImplTest {
                 () -> paymentService.createPaymentSession(request, customer));
 
         // Then
-        assertEquals("Payment is already completed", exception.getMessage());
+        assertEquals("PAYMENT payment for rental with id " + RENTAL_ID + " is already completed",
+                exception.getMessage());
         verifyStripeNeverCalled();
     }
 
@@ -383,7 +384,8 @@ class PaymentServiceImplTest {
                 () -> paymentService.handleSuccess(SESSION_ID));
 
         // Then
-        assertEquals("Payment is not completed", exception.getMessage());
+        assertEquals("Payment for session " + SESSION_ID + " is not completed",
+                exception.getMessage());
         assertEquals(PaymentStatus.PENDING, payment.getStatus());
     }
 

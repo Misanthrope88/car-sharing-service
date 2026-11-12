@@ -20,6 +20,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(@NonNull String username) {
         String email = username.trim().toLowerCase(Locale.ROOT);
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 }

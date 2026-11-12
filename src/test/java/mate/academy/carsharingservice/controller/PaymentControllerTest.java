@@ -123,7 +123,8 @@ class PaymentControllerTest extends AbstractIntegrationTest {
         // Then
         result.andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value(
-                        "Fine is available only for rentals returned after the return date"));
+                        "Fine is not available for rental with id " + ACTIVE_RENTAL_ID
+                                + ": it was not returned after the return date"));
         verify(stripeService, never()).createSession(any(), anyString(), anyString(),
                 anyString());
     }
@@ -137,7 +138,8 @@ class PaymentControllerTest extends AbstractIntegrationTest {
 
         // Then
         result.andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Payment is already completed"));
+                .andExpect(jsonPath("$.error").value("PAYMENT payment for rental with id "
+                        + RETURNED_LATE_RENTAL_ID + " is already completed"));
     }
 
     @Test
@@ -227,7 +229,8 @@ class PaymentControllerTest extends AbstractIntegrationTest {
 
         // Then
         result.andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Payment is not completed"));
+                .andExpect(jsonPath("$.error").value(
+                        "Payment for session " + PENDING_SESSION_ID + " is not completed"));
     }
 
     @Test

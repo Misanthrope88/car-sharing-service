@@ -11,14 +11,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "rentals")
 @Getter
 @Setter
-@NoArgsConstructor
 public class Rental {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

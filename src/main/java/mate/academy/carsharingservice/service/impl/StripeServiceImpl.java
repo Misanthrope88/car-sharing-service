@@ -60,7 +60,7 @@ public class StripeServiceImpl implements StripeService {
             Session session = stripeClient.v1().checkout().sessions().retrieve(sessionId);
             return "paid".equals(session.getPaymentStatus());
         } catch (StripeException e) {
-            throw new PaymentGatewayException("Can't retrieve payment session", e);
+            throw new PaymentGatewayException("Can't retrieve payment session: " + sessionId, e);
         }
     }
 }

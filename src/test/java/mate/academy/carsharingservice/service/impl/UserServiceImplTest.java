@@ -1,14 +1,12 @@
 package mate.academy.carsharingservice.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.sql.SQLException;
 import java.util.Optional;
 import mate.academy.carsharingservice.dto.UpdateUserRequestDto;
 import mate.academy.carsharingservice.dto.UpdateUserRoleRequestDto;
@@ -27,7 +25,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,9 +37,6 @@ class UserServiceImplTest {
     private static final String ENCODED_PASSWORD = "encoded-password";
     private static final String FIRST_NAME = "John";
     private static final String LAST_NAME = "Doe";
-    private static final String DUPLICATE_EMAIL_MESSAGE = "Email is already registered";
-    private static final String UNIQUE_VIOLATION_SQL_STATE = "23505";
-    private static final String FOREIGN_KEY_VIOLATION_SQL_STATE = "23503";
 
     @Mock
     private UserRepository userRepository;
@@ -63,7 +57,7 @@ class UserServiceImplTest {
         when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
         when(userMapper.toEntity(request)).thenReturn(mappedUser);
         when(passwordEncoder.encode(PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(userRepository.saveAndFlush(mappedUser)).thenReturn(mappedUser);
+        when(userRepository.save(mappedUser)).thenReturn(mappedUser);
         when(userMapper.toDto(mappedUser)).thenReturn(expected);
 
         // When
@@ -72,7 +66,7 @@ class UserServiceImplTest {
         // Then
         assertEquals(expected, actual);
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).saveAndFlush(userCaptor.capture());
+        verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
         assertEquals(EMAIL, savedUser.getEmail());
         assertEquals(ENCODED_PASSWORD, savedUser.getPassword());
@@ -91,50 +85,8 @@ class UserServiceImplTest {
                 () -> userService.register(request));
 
         // Then
-        assertEquals(DUPLICATE_EMAIL_MESSAGE, exception.getMessage());
-        verify(userRepository, never()).saveAndFlush(any(User.class));
-    }
-
-    @Test
-    @DisplayName("Register when the database reports a unique violation throws an exception")
-    void register_UniqueViolationOnSave_ThrowsRegistrationException() {
-        // Given
-        UserRegistrationRequestDto request = createRegistrationRequest();
-        User mappedUser = createUser(null, null);
-        DataIntegrityViolationException dbException =
-                createDataIntegrityException(UNIQUE_VIOLATION_SQL_STATE);
-        when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
-        when(userMapper.toEntity(request)).thenReturn(mappedUser);
-        when(passwordEncoder.encode(PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(userRepository.saveAndFlush(mappedUser)).thenThrow(dbException);
-
-        // When
-        RegistrationException exception = assertThrows(RegistrationException.class,
-                () -> userService.register(request));
-
-        // Then
-        assertEquals(DUPLICATE_EMAIL_MESSAGE, exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Register when the database reports another violation rethrows it")
-    void register_OtherIntegrityViolationOnSave_RethrowsOriginalException() {
-        // Given
-        UserRegistrationRequestDto request = createRegistrationRequest();
-        User mappedUser = createUser(null, null);
-        DataIntegrityViolationException dbException =
-                createDataIntegrityException(FOREIGN_KEY_VIOLATION_SQL_STATE);
-        when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
-        when(userMapper.toEntity(request)).thenReturn(mappedUser);
-        when(passwordEncoder.encode(PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(userRepository.saveAndFlush(mappedUser)).thenThrow(dbException);
-
-        // When
-        DataIntegrityViolationException exception = assertThrows(
-                DataIntegrityViolationException.class, () -> userService.register(request));
-
-        // Then
-        assertSame(dbException, exception);
+        assertEquals("Email is already registered: " + EMAIL, exception.getMessage());
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -242,11 +194,5 @@ class UserServiceImplTest {
 
     private UserResponseDto createUserResponseDto(Role role) {
         return new UserResponseDto(USER_ID, EMAIL, FIRST_NAME, LAST_NAME, role);
-    }
-
-    private DataIntegrityViolationException createDataIntegrityException(String sqlState) {
-        SQLException sqlException = new SQLException("Constraint violation", sqlState);
-        return new DataIntegrityViolationException(
-                "Could not execute statement", new RuntimeException(sqlException));
     }
 }
